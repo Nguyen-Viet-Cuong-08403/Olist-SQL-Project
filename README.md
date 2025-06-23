@@ -120,17 +120,23 @@ SELECT
     COLUMN_NAME,
     DATA_TYPE
 FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'Orders' -- => xuất hiện lỗi định dạng thời gian, tiến hành chuyển định dạng nvarchar thành datetime
+WHERE TABLE_NAME = 'Orders'
+
 -- tiến hành thay đổi, bằng cách thêm cột tạm cho order_purchase_timestamp
+
 ALTER TABLE orders
 ADD order_purchase_timestamp_temp DATETIME;
+
 -- Chuyển dữ liệu từ NVARCHAR sang DATETIME
+
 UPDATE orders
 SET order_purchase_timestamp_temp = CONVERT(DATETIME, order_purchase_timestamp, 120)
 WHERE ISDATE(order_purchase_timestamp) = 1;
+
 -- Xóa cột cũ
 ALTER TABLE orders
 DROP COLUMN order_purchase_timestamp;
+
 -- Đổi tên cột tạm thành cột gốc
 EXEC sp_rename 'orders.order_purchase_timestamp_temp', 'order_purchase_timestamp', 'COLUMN';
 
