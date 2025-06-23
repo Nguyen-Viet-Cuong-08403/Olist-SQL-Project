@@ -236,3 +236,124 @@ on Order_payments.order_id=Orders.order_id
 join products
 on products.product_id=Order_items.product_id
 ```
+### 3. Business Questions & Insights
+
+***3.1. Tổng Doanh Thu và Xu Hướng***
+
+Mục tiêu: Tính tổng doanh thu mà Olist tạo ra và phân tích sự thay đổi của doanh thu theo thời gian
+
+Quy trình: Tổng hợp doanh thu (giá + phí vận chuyển) theo ngày, tháng và năm bằng cách sử dụng GROUP BY trên order_purchase_timestamp trong SQL.
+
+```sql
+-- Doanh thu theo Ngày 
+select format(convert(datetime, orders.order_purchase_timestamp), 'dd - MM - yyyy') as Ngày, sum(Price + freight_value) as Doanh_thu_theo_ngày
+from Order_items 
+join Orders
+on Orders.order_id= Order_items.order_id
+group by format(convert(datetime, orders.order_purchase_timestamp), 'dd - MM - yyyy')
+order by format(convert(datetime, orders.order_purchase_timestamp), 'dd - MM - yyyy') ASC
+
+-- Doanh thu theo Tháng
+select format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') as Tháng, sum(Price + freight_value) as Doanh_thu_theo_ngày
+from Order_items 
+join Orders
+on Orders.order_id= Order_items.order_id
+group by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy')
+order by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') ASC
+
+-- Doanh thu theo năm 
+select format(convert(datetime, orders.order_purchase_timestamp), 'yyyy') as Tháng, sum(Price + freight_value) as Doanh_thu_theo_ngày
+from Order_items 
+join Orders
+on Orders.order_id= Order_items.order_id
+group by format(convert(datetime, orders.order_purchase_timestamp), 'yyyy')
+order by format(convert(datetime, orders.order_purchase_timestamp), 'yyyy') ASC
+```
+***3.2. Xu Hướng Số Lượng Đơn Hàng***
+
+Mục tiêu: Xác định số lượng đơn hàng và sự thay đổi của chúng theo thời gian
+
+Quy trình: Đếm số đơn hàng duy nhất theo tháng bằng COUNT(DISTINCT order_id) và GROUP BY order_purchase_timestamp
+
+```sql
+-- Số lượng đơn hàng theo tháng
+select format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') as Tháng, count(order_id) as Tổng_đơn_hàng
+from Order_items 
+group by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy')
+order by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') ASC
+```
+
+***3.3. Các Danh Mục Sản Phẩm Phổ Biến***
+
+Mục tiêu: Xác định các danh mục sản phẩm phổ biến nhất và so sánh hiệu quả doanh số của chúng.
+
+Quy trình: Phân tích số lượng đơn hàng và tổng doanh thu theo product_category_name bằng GROUP BY và ORDER BY
+
+```sql
+Select p.product_category_name as Danh_mục, count(order_id) as Số_lượng, sum(price+ freight_value) as TỔng_doanh_số
+from Order_items as Oi
+join Products as p
+on Oi.product_id=p.product_id
+group by p.product_category_name 
+order by count(order_id) DESC    
+```
+
+***3.4. Phân Tích Giá Trị Đơn Hàng Trung Bình (AOV)***
+
+Mục tiêu: Đánh giá AOV và sự khác biệt của nó giữa các danh mục sản phẩm và phương thức thanh toán.
+
+Quy trình: Tính AOV bằng trung bình của price + freight_value, nhóm theo product_category_name và payment_type
+
+```sql
+-- Giá trị AVO theo Product Category 
+SELECT 
+    p.product_category_name AS Danh_mục,
+    AVG(subquery.order_total) AS AVO_theo_danh_mục
+FROM (
+    SELECT 
+        oi.order_id,
+        SUM(oi.price + oi.freight_value) AS order_total
+    FROM Order_items AS oi
+    JOIN Products AS p ON oi.product_id = p.product_id
+    GROUP BY oi.order_id
+) AS subquery
+JOIN Products AS p ON subquery.order_id IN (
+    SELECT order_id 
+    FROM Order_items 
+    WHERE product_id = p.product_id
+)
+GROUP BY p.product_category_name
+ORDER BY AVO_theo_danh_mục DESC;
+-- Giá trị AVO trên Payment_method 
+SELECT 
+    pay.payment_type AS Phương_thức,
+    AVG(subquery.order_total) AS AVO_theo_phương_thức
+FROM (
+    SELECT 
+        oi.order_id,
+        SUM(oi.price + oi.freight_value) AS order_total
+    FROM Order_items AS oi
+    GROUP BY oi.order_id
+) AS subquery
+JOIN Order_payments AS pay
+    ON subquery.order_id = pay.order_id
+GROUP BY pay.payment_type
+ORDER BY AVO_theo_phương_thức DESC;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
