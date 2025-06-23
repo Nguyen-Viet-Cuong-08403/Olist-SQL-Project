@@ -10,3 +10,79 @@ Dự án này giới thiệu nỗ lực phân tích dữ liệu thực tế bằ
 ## Project Structure
 Dự án được xây dựng dựa trên bộ dữ liệu thương mại điện tử Olist, với các mối quan hệ giữa các bảng được minh họa trong sơ đồ thực thể - quan hệ (Entity-Relationship Diagram - ERD) bên dưới
 ![Project Setup Screenshot](olist_erd.png)
+Tạo cơ sở dữ liệu : Tạo một database tên SQL_Project_2
+Tạo bảng: Tạo các bảng liên quan đến Dataset
+Mã SQL để Tạo Bảng
+```sql
+-- Create Customers table
+CREATE TABLE Customers (
+    customer_id VARCHAR(50) PRIMARY KEY,
+    customer_unique_id VARCHAR(50),
+    customer_zip_code_prefix VARCHAR(5),
+    customer_city VARCHAR(100),
+    customer_state CHAR(2)
+);
+-- Create Geolocation table
+CREATE TABLE Geolocation (
+    geolocation_zip_code_prefix VARCHAR(5),
+    geolocation_city VARCHAR(100),
+    geolocation_state CHAR(2)
+);
+-- Create Order_Items table
+CREATE TABLE Order_Items (
+    order_id VARCHAR(50),
+    order_item_id INT,
+    product_id VARCHAR(50),
+    seller_id VARCHAR(50),
+    shipping_limit_date DATETIME,
+    price DECIMAL(10, 2),
+    freight_value DECIMAL(10, 2)
+);
+-- Create Order_Payments table
+CREATE TABLE Order_Payments (
+    order_id VARCHAR(50),
+    payment_sequential INT,
+    payment_type VARCHAR(50),
+    payment_installments INT,
+    payment_value DECIMAL(10, 2)
+);
+-- Create Order_Reviews table
+CREATE TABLE Order_Reviews (
+    review_id VARCHAR(50) PRIMARY KEY,
+    order_id VARCHAR(50),
+    review_score INT,
+    review_comment_title VARCHAR(200),
+    review_comment_message TEXT,
+    review_creation_date DATETIME,
+    review_answer_timestamp DATETIME
+);
+-- Create Sellers table
+CREATE TABLE Sellers (
+    seller_id VARCHAR(50) PRIMARY KEY,
+    seller_zip_code_prefix VARCHAR(5),
+    seller_city VARCHAR(100),
+    seller_state CHAR(2)
+);
+-- Create Orders table
+CREATE TABLE Orders (
+    order_id VARCHAR(50) PRIMARY KEY,
+    customer_id VARCHAR(50),
+    order_status VARCHAR(50),
+    order_purchase_timestamp DATETIME,
+    order_approved_at DATETIME,
+    order_delivered_carrier_date DATETIME,
+    order_delivered_customer_date DATETIME,
+    order_estimated_delivery_date DATETIME
+);
+-- Create Products table
+CREATE TABLE Products (
+    product_id VARCHAR(50) PRIMARY KEY,
+    product_category_name VARCHAR(100),
+    product_name_length INT,
+    product_description_length INT,
+    product_photos_qty INT,
+    product_weight_g DECIMAL(10, 2),
+    product_length_cm DECIMAL(10, 2),
+    product_height_cm DECIMAL(10, 2),
+    product_width_cm DECIMAL(10, 2)
+);
