@@ -91,7 +91,8 @@ Phần này trình bày quy trình phân tích dữ liệu và các phát hiện
 ### 1. Data Cleaning
 Mục tiêu: Đảm bảo chất lượng dữ liệu bằng cách xử lý giá trị NULL, dữ liệu trùng lặp, không đồng nhất kiểu dữ liệu và các giá trị ngoại lai
 **Process**
-***Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)***
+
+***+Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)***
 
 ```sql
 SELECT
@@ -105,7 +106,7 @@ SELECT
     COUNT(*) - COUNT(review_answer_timestamp) AS null_answer_timestamp
 FROM order_reviews;
 ```
-***Kiểm tra giá trị trùng lặp ví dụ đối với bảng Customer thì cột customer_id không nên trùng lặp, hay product_id trong bảng Product***
+***+Kiểm tra giá trị trùng lặp ví dụ đối với bảng Customer thì cột customer_id không nên trùng lặp, hay product_id trong bảng Product***
 
 ```sql
 select customer_id, count(*) as count 
@@ -113,7 +114,7 @@ from customers
 group by customer_id
 having count(*) > 1
 ```
-***Chuẩn hóa kiểu dữ liệu trong cột để hỗ trợ phân tích theo thời gian***
+***+Chuẩn hóa kiểu dữ liệu trong cột để hỗ trợ phân tích theo thời gian***
 
 ```sql
 -- Kiểm tra định dạng hiện tại 
