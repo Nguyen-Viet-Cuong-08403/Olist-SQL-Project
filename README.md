@@ -9,4 +9,4 @@ Dự án này giới thiệu nỗ lực phân tích dữ liệu thực tế bằ
 5. Cung cấp các thông tin chuyên sâu có thể hành động để tối ưu hóa nền tảng thương mại điện tử Olist và hỗ trợ việc ra quyết định chiến lược.
 ## Project Structure
 Dự án được xây dựng dựa trên bộ dữ liệu thương mại điện tử Olist, với các mối quan hệ giữa các bảng được minh họa trong sơ đồ thực thể - quan hệ (Entity-Relationship Diagram - ERD) bên dưới
-![Project Setup Screenshot](images/olist_erd.png.png)
+![Project Setup Screenshot](olist_erd.png)
