@@ -85,3 +85,8 @@ CREATE TABLE Products (
     product_height_cm DECIMAL(10, 2),
     product_width_cm DECIMAL(10, 2)
 );
+## Data Analysis & Findings
+Phần này trình bày quy trình phân tích dữ liệu và các phát hiện chính dựa trên bộ dữ liệu Olist, thực hiện theo các bước được nêu trong các đoạn mã SQL.
+### 1. Data Cleaning
+Mục tiêu: Đảm bảo chất lượng dữ liệu bằng cách xử lý giá trị NULL, dữ liệu trùng lặp, không đồng nhất kiểu dữ liệu và các giá trị ngoại lai
+**Process**
