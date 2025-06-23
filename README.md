@@ -90,7 +90,8 @@ Phần này trình bày quy trình phân tích dữ liệu và các phát hiện
 ### 1. Data Cleaning
 Mục tiêu: Đảm bảo chất lượng dữ liệu bằng cách xử lý giá trị NULL, dữ liệu trùng lặp, không đồng nhất kiểu dữ liệu và các giá trị ngoại lai
 **Process**
-Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)
++ Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)
+
 ```sql
 SELECT
     COUNT(*) AS total_rows,
@@ -102,3 +103,52 @@ SELECT
     COUNT(*) - COUNT(review_creation_date) AS null_creation_date,
     COUNT(*) - COUNT(review_answer_timestamp) AS null_answer_timestamp
 FROM order_reviews;
+
++ Kiểm tra giá trị trùng lặp ví dụ đối với bảng Customer thì cột customer_id không nên trùng lặp, hay product_id trong bảng Product
+
+```sql
+select customer_id, count(*) as count 
+from customers
+group by customer_id
+having count(*) > 1
+
++ Chuẩn hóa kiểu dữ liệu trong cột để hỗ trợ phân tích theo thời gian
+
+```sql
+-- Kiểm tra định dạng hiện tại 
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'Orders' -- => xuất hiện lỗi định dạng thời gian, tiến hành chuyển định dạng nvarchar thành datetime
+-- tiến hành thay đổi, bằng cách thêm cột tạm cho order_purchase_timestamp
+ALTER TABLE orders
+ADD order_purchase_timestamp_temp DATETIME;
+-- Chuyển dữ liệu từ NVARCHAR sang DATETIME
+UPDATE orders
+SET order_purchase_timestamp_temp = CONVERT(DATETIME, order_purchase_timestamp, 120)
+WHERE ISDATE(order_purchase_timestamp) = 1;
+-- Xóa cột cũ
+ALTER TABLE orders
+DROP COLUMN order_purchase_timestamp;
+-- Đổi tên cột tạm thành cột gốc
+EXEC sp_rename 'orders.order_purchase_timestamp_temp', 'order_purchase_timestamp', 'COLUMN';
+
++ Xử lí giá trị ngoại lại bằng phương pháp IQR
+
+```sql
+WITH stats AS (
+    SELECT 
+        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY price) over() AS Q1,
+        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY price) over() AS Q3
+    FROM order_items
+)
+SELECT 
+    order_id, 
+    price
+FROM order_items, stats
+WHERE price < (Q1 - 1.5 * (Q3 - Q1))
+   OR price > (Q3 + 1.5 * (Q3 - Q1))
+
+
+
