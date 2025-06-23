@@ -87,9 +87,13 @@ CREATE TABLE Products (
 );
 ```
 ## Data Analysis & Findings
+
 Phần này trình bày quy trình phân tích dữ liệu và các phát hiện chính dựa trên bộ dữ liệu Olist, thực hiện theo các bước được nêu trong các đoạn mã SQL.
+
 ### 1. Data Cleaning
+
 Mục tiêu: Đảm bảo chất lượng dữ liệu bằng cách xử lý giá trị NULL, dữ liệu trùng lặp, không đồng nhất kiểu dữ liệu và các giá trị ngoại lai
+
 **Process**
 
 ***+Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)***
@@ -162,6 +166,7 @@ WHERE price < (Q1 - 1.5 * (Q3 - Q1))
 ### 2. Customer Segmentation using RFM Analysis
 Mục tiêu: Phân loại khách hàng thành các nhóm Khách hàng Tốt nhất, Đã rời bỏ, và Có nguy cơ rời bỏ dựa theo mô hình RFM
 **Process**
+
 + Recency (R - Gần đây): Tính số ngày kể từ lần mua cuối cùng so với ngày đặt hàng gần nhất.
 + Frequency (F - Tần suất): Đếm số đơn hàng duy nhất theo từng khách hàng.
 + Monetary (M - Chi tiêu): Tính tổng chi tiêu (giá + phí vận chuyển) của từng khách hàng.
