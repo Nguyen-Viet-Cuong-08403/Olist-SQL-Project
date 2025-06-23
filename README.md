@@ -155,6 +155,77 @@ SELECT
 FROM order_items, stats
 WHERE price < (Q1 - 1.5 * (Q3 - Q1))
    OR price > (Q3 + 1.5 * (Q3 - Q1))
+=>> Kết luận: Dữ liệu đã được làm sạch thành công, không có trùng lặp hoặc ngoại lệ nghiêm trọng, đảm bảo tính tin cậy cho phân tích.
 
+### 2. Customer Segmentation using RFM Analysis
+Mục tiêu: Phân loại khách hàng thành các nhóm Khách hàng Tốt nhất, Đã rời bỏ, và Có nguy cơ rời bỏ dựa theo mô hình RFM
+**Process**
++ Recency (R - Gần đây): Tính số ngày kể từ lần mua cuối cùng so với ngày đặt hàng gần nhất.
++ Frequency (F - Tần suất): Đếm số đơn hàng duy nhất theo từng khách hàng.
++ Monetary (M - Chi tiêu): Tính tổng chi tiêu (giá + phí vận chuyển) của từng khách hàng.
+=> Phân loại theo thang điểm 1–5 cho từng chỉ số và kết hợp để xác định phân khúc
 
+```sql
+with table_1 as (
+select c.customer_id as Mã_Khách_Hàng_R, o.order_purchase_timestamp as Ngày_mua_hàng, 
+    (select max(order_purchase_timestamp)
+     from orders ) as Ngày_làm_mốc 
+from orders as o
+join customers as c
+on o.customer_id=c.customer_id
+), table_2 as (
+select *, datediff(day,Ngày_mua_hàng, Ngày_làm_mốc) as Khoảng_cách 
+from table_1
+), table_3 as (
+-- Phân nhóm khách hàng, tiêu chí chia nhóm khách hàng thành 5 nhóm bằng nhau và đánh giá 
+select * , NTILE(5) over (order by Khoảng_cách ASC) as Phân_loại_R
+from table_2 
+), table_4 as (
+--- TiTinh chỉ số Frequency: Đếm số lượng đơn hàng duy nhất mà mỗi khách hàng đã đặt
+select c.customer_id as Mã_Hàng_Hàng_F, count(distinct order_id) as Số_lương_đơn_hàng
+from orders as o
+join customers as c
+on o.customer_id=c.customer_id
+group by c.customer_id
+), table_5 as (
+select *, ntile(5) over (order by Số_lương_đơn_hàng DESC ) as Phân_loại_F
+from table_4
+), table_6 as (
+--- Tính chỉ số Monetary: Tính tổng giá trị tiền mà mỗi khách hàng đã chi tiêu
+select c.customer_id as Mã_Hàng_Hàng_M, oi.price, oi.freight_value, oi.price + oi.freight_value as Tổng_số_tiền
+from orders as o
+join customers as c
+on o.customer_id=c.customer_id
+join Order_items as oi
+on o.order_id=oi.order_id
+), table_7 as (
+select *, ntile(5) over(order by Tổng_số_tiền DESC) as Phân_loại_M
+from table_6
+), table_8 as (
+--- Hợp nhất 3 bảng lại với cột Customer_id chung
+select table_3.Mã_Khách_Hàng_R, Phân_loại_R as Điểm_số_R , Phân_loại_M as Điểm_số_M, Phân_loại_F as Điểm_số_F
+from table_3
+join table_5
+on table_3.Mã_Khách_Hàng_R=table_5.Mã_Hàng_Hàng_F
+join table_7
+on table_3.Mã_Khách_Hàng_R=table_7.Mã_Hàng_Hàng_M
+), table_9 as (
+-- Lọc khách hàng Best Customer : tiêu chí R = 1 ( Mua gần đây), F = 5 (Số đơn nhiều ), M (tiền chi nhiều)
+select *
+from table_8
+where Điểm_số_R = 1 and Điểm_số_M = 5 and Điểm_số_F = 5 
+), table_10 as (-- Lấy thông tin khách hàng best customer 
+select distinct table_9.Mã_Khách_Hàng_R,c.customer_city, c.customer_state, Order_items.price, Order_items.freight_value, 
+Order_payments.payment_type,products.product_category_name
+from table_9 
+join customers as c
+on table_9.Mã_Khách_Hàng_R= c.customer_id
+join Orders 
+on orders.customer_id=c.customer_id
+join Order_items
+on orders.order_id=Order_items.order_id
+join Order_payments
+on Order_payments.order_id=Orders.order_id
+join products
+on products.product_id=Order_items.product_id
 
