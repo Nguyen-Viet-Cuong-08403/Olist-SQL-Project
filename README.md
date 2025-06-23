@@ -85,12 +85,13 @@ CREATE TABLE Products (
     product_height_cm DECIMAL(10, 2),
     product_width_cm DECIMAL(10, 2)
 );
+```
 ## Data Analysis & Findings
 Phần này trình bày quy trình phân tích dữ liệu và các phát hiện chính dựa trên bộ dữ liệu Olist, thực hiện theo các bước được nêu trong các đoạn mã SQL.
 ### 1. Data Cleaning
 Mục tiêu: Đảm bảo chất lượng dữ liệu bằng cách xử lý giá trị NULL, dữ liệu trùng lặp, không đồng nhất kiểu dữ liệu và các giá trị ngoại lai
 **Process**
-+ Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)
+***Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)***
 
 ```sql
 SELECT
@@ -103,16 +104,16 @@ SELECT
     COUNT(*) - COUNT(review_creation_date) AS null_creation_date,
     COUNT(*) - COUNT(review_answer_timestamp) AS null_answer_timestamp
 FROM order_reviews;
-
-+ Kiểm tra giá trị trùng lặp ví dụ đối với bảng Customer thì cột customer_id không nên trùng lặp, hay product_id trong bảng Product
+```
+***Kiểm tra giá trị trùng lặp ví dụ đối với bảng Customer thì cột customer_id không nên trùng lặp, hay product_id trong bảng Product***
 
 ```sql
 select customer_id, count(*) as count 
 from customers
 group by customer_id
 having count(*) > 1
-
-+ Chuẩn hóa kiểu dữ liệu trong cột để hỗ trợ phân tích theo thời gian
+```
+***Chuẩn hóa kiểu dữ liệu trong cột để hỗ trợ phân tích theo thời gian***
 
 ```sql
 -- Kiểm tra định dạng hiện tại 
@@ -139,8 +140,8 @@ DROP COLUMN order_purchase_timestamp;
 
 -- Đổi tên cột tạm thành cột gốc
 EXEC sp_rename 'orders.order_purchase_timestamp_temp', 'order_purchase_timestamp', 'COLUMN';
-
-+ Xử lí giá trị ngoại lại bằng phương pháp IQR
+```
+***Xử lí giá trị ngoại lại bằng phương pháp IQR***
 
 ```sql
 WITH stats AS (
@@ -156,7 +157,7 @@ FROM order_items, stats
 WHERE price < (Q1 - 1.5 * (Q3 - Q1))
    OR price > (Q3 + 1.5 * (Q3 - Q1))
 =>> Kết luận: Dữ liệu đã được làm sạch thành công, không có trùng lặp hoặc ngoại lệ nghiêm trọng, đảm bảo tính tin cậy cho phân tích.
-
+```
 ### 2. Customer Segmentation using RFM Analysis
 Mục tiêu: Phân loại khách hàng thành các nhóm Khách hàng Tốt nhất, Đã rời bỏ, và Có nguy cơ rời bỏ dựa theo mô hình RFM
 **Process**
@@ -228,4 +229,4 @@ join Order_payments
 on Order_payments.order_id=Orders.order_id
 join products
 on products.product_id=Order_items.product_id
-
+```
