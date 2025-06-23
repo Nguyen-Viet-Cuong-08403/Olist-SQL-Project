@@ -10,9 +10,8 @@ Dự án này giới thiệu nỗ lực phân tích dữ liệu thực tế bằ
 ## Project Structure
 Dự án được xây dựng dựa trên bộ dữ liệu thương mại điện tử Olist, với các mối quan hệ giữa các bảng được minh họa trong sơ đồ thực thể - quan hệ (Entity-Relationship Diagram - ERD) bên dưới
 ![Project Setup Screenshot](olist_erd.png)
-Tạo cơ sở dữ liệu : Tạo một database tên SQL_Project_2
-Tạo bảng: Tạo các bảng liên quan đến Dataset
-Mã SQL để Tạo Bảng
+
+## SQL Code for Table Creation
 ```sql
 -- Create Customers table
 CREATE TABLE Customers (
