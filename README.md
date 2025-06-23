@@ -90,3 +90,15 @@ Phần này trình bày quy trình phân tích dữ liệu và các phát hiện
 ### 1. Data Cleaning
 Mục tiêu: Đảm bảo chất lượng dữ liệu bằng cách xử lý giá trị NULL, dữ liệu trùng lặp, không đồng nhất kiểu dữ liệu và các giá trị ngoại lai
 **Process**
+Kiểm tra giá trị NULL ở các cột quan trọng (ví dụ: bảng order_reviews) bằng cách so sánh COUNT(*) và COUNT(column)
+```sql
+SELECT
+    COUNT(*) AS total_rows,
+    COUNT(*) - COUNT(review_id) AS null_review_id,
+    COUNT(*) - COUNT(order_id) AS null_order_id,
+    COUNT(*) - COUNT(review_score) AS null_review_score,
+    COUNT(*) - COUNT(review_comment_title) AS null_comment_title,
+    COUNT(*) - COUNT(review_comment_message) AS null_comment_message,
+    COUNT(*) - COUNT(review_creation_date) AS null_creation_date,
+    COUNT(*) - COUNT(review_answer_timestamp) AS null_answer_timestamp
+FROM order_reviews;
