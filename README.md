@@ -170,6 +170,7 @@ Mục tiêu: Phân loại khách hàng thành các nhóm Khách hàng Tốt nh�
 + Recency (R - Gần đây): Tính số ngày kể từ lần mua cuối cùng so với ngày đặt hàng gần nhất.
 + Frequency (F - Tần suất): Đếm số đơn hàng duy nhất theo từng khách hàng.
 + Monetary (M - Chi tiêu): Tính tổng chi tiêu (giá + phí vận chuyển) của từng khách hàng.
+  
 => Phân loại theo thang điểm 1–5 cho từng chỉ số và kết hợp để xác định phân khúc
 
 ```sql
