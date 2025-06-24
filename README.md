@@ -1,6 +1,6 @@
 # Olist Data Analysis Project: Unlocking Customer Insights with SQL
 ## Project Overview
-Dự án này giới thiệu nỗ lực phân tích dữ liệu thực tế bằng cách sử dụng tập dữ liệu thương mại điện tử Olist, một trong những thị trường trực tuyến lớn nhất của Brazil. Tận dụng SQL, tôi đã tiến hành Phân tích dữ liệu thăm dò (EDA) chuyên sâu để phân khúc khách hàng thành các nhóm chính—Khách hàng tốt nhất, Khách hàng đã ngừng sử dụng và Khách hàng tiềm năng đã ngừng sử dụng—bằng cách sử dụng mô hình RFM (Gần đây, Tần suất, Tiền tệ). Ngoài ra, tôi đã giải quyết các câu hỏi kinh doanh quan trọng, bao gồm xu hướng doanh thu, danh mục sản phẩm phổ biến và các biến thể Giá trị đơn hàng trung bình (AOV), cung cấp thông tin chi tiết có thể hành động để tối ưu hóa nền tảng của Olist. ự án này làm nổi bật khả năng làm sạch dữ liệu, thực hiện phân tích nâng cao và cung cấp các giải pháp hướng đến doanh nghiệp của tôi, khiến nó trở thành một minh chứng có giá trị về các kỹ năng Phân tích dữ liệu của tôi kể từ tháng 6 năm 2025.
+Dự án này giới thiệu nỗ lực phân tích dữ liệu thực tế bằng cách sử dụng tập dữ liệu thương mại điện tử Olist, một trong những thị trường trực tuyến lớn nhất của Brazil. Tận dụng SQL, tôi đã tiến hành Phân tích dữ liệu thăm dò (EDA) chuyên sâu để phân khúc khách hàng thành các nhóm chính—Khách hàng tốt nhất, Khách hàng đã ngừng sử dụng và Khách hàng tiềm năng đã ngừng sử dụng—bằng cách sử dụng mô hình RFM (Gần đây, Tần suất, Tiền tệ). Ngoài ra, tôi đã giải quyết các câu hỏi kinh doanh quan trọng, bao gồm xu hướng doanh thu, danh mục sản phẩm phổ biến và các biến thể Giá trị đơn hàng trung bình (AOV), cung cấp thông tin chi tiết có thể hành động để tối ưu hóa nền tảng của Olist. DDự án này làm nổi bật khả năng làm sạch dữ liệu, thực hiện phân tích nâng cao và cung cấp các giải pháp hướng đến doanh nghiệp của tôi, khiến nó trở thành một minh chứng có giá trị về các kỹ năng Phân tích dữ liệu của tôi kể từ tháng 6 năm 2025.
 ## Objective
 1. Làm sạch và xử lý dữ liệu để đảm bảo độ chính xác và độ tin cậy trong phân tích.
 2. Thực hiện phân tích khám phá dữ liệu (EDA) để hiểu hành vi khách hàng và các mô hình giao dịch.
@@ -113,10 +113,10 @@ FROM order_reviews;
 ***+Kiểm tra giá trị trùng lặp ví dụ đối với bảng Customer thì cột customer_id không nên trùng lặp, hay product_id trong bảng Product***
 
 ```sql
-select customer_id, count(*) as count 
-from customers
-group by customer_id
-having count(*) > 1
+SELECT customer_id, COUNT(*) as count 
+FROM customers
+GROUP BY customer_id
+HAVINGHAVING count(*) > 1
 ```
 ***+Chuẩn hóa kiểu dữ liệu trong cột để hỗ trợ phân tích theo thời gian***
 
@@ -173,68 +173,68 @@ Mục tiêu: Phân loại khách hàng thành các nhóm Khách hàng Tốt nh�
 => Phân loại theo thang điểm 1–5 cho từng chỉ số và kết hợp để xác định phân khúc
 
 ```sql
-with table_1 as (
-select c.customer_id as Mã_Khách_Hàng_R, o.order_purchase_timestamp as Ngày_mua_hàng, 
-    (select max(order_purchase_timestamp)
-     from orders ) as Ngày_làm_mốc 
-from orders as o
-join customers as c
-on o.customer_id=c.customer_id
-), table_2 as (
-select *, datediff(day,Ngày_mua_hàng, Ngày_làm_mốc) as Khoảng_cách 
-from table_1
-), table_3 as (
+WITH table_1 AS (
+SELECT c.customer_id as Mã_Khách_Hàng_R, o.order_purchase_timestamp as Ngày_mua_hàng, 
+    (SELECT MAX(order_purchase_timestamp)
+     FROM orders ) AS Ngày_làm_mốc 
+FROM orders AS o
+JOIN customers AS c
+ON o.customer_id=c.customer_id
+), table_2 AS (
+SELECT *, DATEDIFF(day,Ngày_mua_hàng, Ngày_làm_mốc) AS Khoảng_cách 
+FROM table_1
+), table_3 AS (
 -- Phân nhóm khách hàng, tiêu chí chia nhóm khách hàng thành 5 nhóm bằng nhau và đánh giá 
-select * , NTILE(5) over (order by Khoảng_cách ASC) as Phân_loại_R
-from table_2 
-), table_4 as (
---- TiTinh chỉ số Frequency: Đếm số lượng đơn hàng duy nhất mà mỗi khách hàng đã đặt
-select c.customer_id as Mã_Hàng_Hàng_F, count(distinct order_id) as Số_lương_đơn_hàng
-from orders as o
-join customers as c
-on o.customer_id=c.customer_id
-group by c.customer_id
-), table_5 as (
-select *, ntile(5) over (order by Số_lương_đơn_hàng DESC ) as Phân_loại_F
-from table_4
-), table_6 as (
+SELECT * , NTILE(5) OVER (ORDER BY Khoảng_cách ASC) AS Phân_loại_R
+FROM table_2 
+), table_4 AS (
+--- Tính chỉ số Frequency: Đếm số lượng đơn hàng duy nhất mà mỗi khách hàng đã đặt
+SELECT c.customer_id AS Mã_Hàng_Hàng_F, COUNT(DISTINCT order_id) AS Số_lương_đơn_hàng
+FROM orders AS o
+JOIN customers AS c
+ON o.customer_id=c.customer_id
+GROUP BY c.customer_id
+), table_5 AS (
+SELECT *, NTILE(5) OVER (ORDER BY Số_lương_đơn_hàng DESC ) AS Phân_loại_F
+FROM table_4
+), table_6  (
 --- Tính chỉ số Monetary: Tính tổng giá trị tiền mà mỗi khách hàng đã chi tiêu
-select c.customer_id as Mã_Hàng_Hàng_M, oi.price, oi.freight_value, oi.price + oi.freight_value as Tổng_số_tiền
-from orders as o
-join customers as c
-on o.customer_id=c.customer_id
-join Order_items as oi
-on o.order_id=oi.order_id
-), table_7 as (
-select *, ntile(5) over(order by Tổng_số_tiền DESC) as Phân_loại_M
-from table_6
-), table_8 as (
+SELECT c.customer_id AS Mã_Hàng_Hàng_M, oi.price, oi.freight_value, oi.price + oi.freight_value AS Tổng_số_tiền
+FROM orders AS o
+JOIN customers AS c
+ON o.customer_id=c.customer_id
+JOIN Order_items AS oi
+ON o.order_id=oi.order_id
+), table_7 AS (
+SELECT *, NTILE(5) OVER (ORDER BY Tổng_số_tiền DESC) AS Phân_loại_M
+FROM table_6
+), table_8 AS (
 --- Hợp nhất 3 bảng lại với cột Customer_id chung
-select table_3.Mã_Khách_Hàng_R, Phân_loại_R as Điểm_số_R , Phân_loại_M as Điểm_số_M, Phân_loại_F as Điểm_số_F
-from table_3
-join table_5
-on table_3.Mã_Khách_Hàng_R=table_5.Mã_Hàng_Hàng_F
-join table_7
-on table_3.Mã_Khách_Hàng_R=table_7.Mã_Hàng_Hàng_M
-), table_9 as (
+SELECT table_3.Mã_Khách_Hàng_R, Phân_loại_R AS Điểm_số_R , Phân_loại_M AS Điểm_số_M, Phân_loại_F AS Điểm_số_F
+FROM table_3
+JOIN table_5
+ON table_3.Mã_Khách_Hàng_R=table_5.Mã_Hàng_Hàng_F
+JOIN table_7
+ON table_3.Mã_Khách_Hàng_R=table_7.Mã_Hàng_Hàng_M
+), table_9 AS (
 -- Lọc khách hàng Best Customer : tiêu chí R = 1 ( Mua gần đây), F = 5 (Số đơn nhiều ), M (tiền chi nhiều)
-select *
-from table_8
-where Điểm_số_R = 1 and Điểm_số_M = 5 and Điểm_số_F = 5 
-), table_10 as (-- Lấy thông tin khách hàng best customer 
-select distinct table_9.Mã_Khách_Hàng_R,c.customer_city, c.customer_state, Order_items.price, Order_items.freight_value, 
+SELECT *
+FROM table_8
+WHERE Điểm_số_R = 1 and Điểm_số_M = 5 and Điểm_số_F = 5 
+), table_10 AS (-- Lấy thông tin khách hàng best customer 
+SELECT DISTINCT table_9.Mã_Khách_Hàng_R,c.customer_city, c.customer_state, Order_items.price, Order_items.freight_value, 
 Order_payments.payment_type,products.product_category_name
-from table_9 
-join customers as c
-on table_9.Mã_Khách_Hàng_R= c.customer_id
-join Orders 
-on orders.customer_id=c.customer_id
-join Order_items
-on orders.order_id=Order_items.order_id
-join Order_payments
-on Order_payments.order_id=Orders.order_id
-join products
-on products.product_id=Order_items.product_id
+FROM table_9 
+JOIN customers as c
+ON table_9.Mã_Khách_Hàng_R= c.customer_id
+JOIN Orders 
+ON orders.customer_id=c.customer_id
+JOIN Order_items
+ON orders.order_id=Order_items.order_id
+JOIN Order_payments
+ON Order_payments.order_id=Orders.order_id
+JOIN products
+ON products.product_id=Order_items.product_id
 ```
 ### 3. Business Questions & Insights
 
@@ -246,28 +246,28 @@ Quy trình: Tổng hợp doanh thu (giá + phí vận chuyển) theo ngày, thá
 
 ```sql
 -- Doanh thu theo Ngày 
-select format(convert(datetime, orders.order_purchase_timestamp), 'dd - MM - yyyy') as Ngày, sum(Price + freight_value) as Doanh_thu_theo_ngày
-from Order_items 
-join Orders
-on Orders.order_id= Order_items.order_id
-group by format(convert(datetime, orders.order_purchase_timestamp), 'dd - MM - yyyy')
-order by format(convert(datetime, orders.order_purchase_timestamp), 'dd - MM - yyyy') ASC
+SELECT FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'dd - MM - yyyy') AS Ngày, sum(Price + freight_value) AS Doanh_thu_theo_ngày
+FROM Order_items 
+JOIN Orders
+ON Orders.order_id= Order_items.order_id
+GROUP BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'dd - MM - yyyy')
+ORDER BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'dd - MM - yyyy') ASC
 
 -- Doanh thu theo Tháng
-select format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') as Tháng, sum(Price + freight_value) as Doanh_thu_theo_ngày
-from Order_items 
-join Orders
-on Orders.order_id= Order_items.order_id
-group by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy')
-order by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') ASC
+SELECT FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'MM - yyyy') AS Tháng, sum(Price + freight_value) AS Doanh_thu_theo_ngày
+FROM Order_items 
+JOIN Orders
+ON Orders.order_id= Order_items.order_id
+GROUP BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'MM - yyyy')
+ORDER BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'MM - yyyy') ASC
 
 -- Doanh thu theo năm 
-select format(convert(datetime, orders.order_purchase_timestamp), 'yyyy') as Tháng, sum(Price + freight_value) as Doanh_thu_theo_ngày
-from Order_items 
-join Orders
-on Orders.order_id= Order_items.order_id
-group by format(convert(datetime, orders.order_purchase_timestamp), 'yyyy')
-order by format(convert(datetime, orders.order_purchase_timestamp), 'yyyy') ASC
+SELECT FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'yyyy') AS Tháng, sum(Price + freight_value) AS Doanh_thu_theo_ngày
+FROM Order_items 
+JOIN Orders
+ON Orders.order_id= Order_items.order_id
+GROUP BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'yyyy')
+ORDER BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'yyyy') ASC
 ```
 ***3.2. Xu Hướng Số Lượng Đơn Hàng***
 
@@ -277,10 +277,10 @@ Quy trình: Đếm số đơn hàng duy nhất theo tháng bằng COUNT(DISTINCT
 
 ```sql
 -- Số lượng đơn hàng theo tháng
-select format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') as Tháng, count(order_id) as Tổng_đơn_hàng
-from Order_items 
-group by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy')
-order by format(convert(datetime, orders.order_purchase_timestamp), 'MM - yyyy') ASC
+SELECT FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'MM - yyyy') AS Tháng, count(order_id) AS Tổng_đơn_hàng
+FROM Order_items 
+GROUP BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'MM - yyyy')
+ORDER BY FORMAT(CONVERT(DATETIME, orders.order_purchase_timestamp), 'MM - yyyy') ASC
 ```
 
 ***3.3. Các Danh Mục Sản Phẩm Phổ Biến***
@@ -290,12 +290,12 @@ Mục tiêu: Xác định các danh mục sản phẩm phổ biến nhất và s
 Quy trình: Phân tích số lượng đơn hàng và tổng doanh thu theo product_category_name bằng GROUP BY và ORDER BY
 
 ```sql
-Select p.product_category_name as Danh_mục, count(order_id) as Số_lượng, sum(price+ freight_value) as TỔng_doanh_số
-from Order_items as Oi
-join Products as p
-on Oi.product_id=p.product_id
-group by p.product_category_name 
-order by count(order_id) DESC    
+SELECT p.product_category_name AS Danh_mục, count(order_id) AS Số_lượng, sum(price+ freight_value) AS TỔng_doanh_số
+FROM Order_items AS Oi
+JOIN Products AS p
+ON Oi.product_id=p.product_id
+GROUP BY p.product_category_name 
+ORDER BY count(order_id) DESC    
 ```
 
 ***3.4. Phân Tích Giá Trị Đơn Hàng Trung Bình (AOV)***
